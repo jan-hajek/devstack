@@ -1,0 +1,7 @@
+.buildpath
+.project
+.settings
+nbproject
+/app/config/my.neon
+!.gitignore
+tests/coverage
