@@ -80,7 +80,7 @@ class Mock
 	public function verifyMethod($name)
 	{
 		if(!isset($this->verifyMethods[$name])) {
-			// FIXME - jhajek vyjimka
+			throw new UnknownVerifyMethodException("Verify method {$name} doesn't exists");
 		}
 		return $this->verifyMethods[$name];
 	}
@@ -140,3 +140,4 @@ class ProtectedMethodException extends \Exception {}
 class NonExistentMethodCallException extends \Exception {}
 class NonExistentInvocationException extends \Exception {}
 class UndeclaredMethodInvocationException extends \Exception {}
+class UnknownVerifyMethodException extends \Exception {}

@@ -84,6 +84,9 @@ class VerifyMethod
 	 */
 	public function invocationNo($no)
 	{
+		if($no < 0) {
+			$no = count($this->invocations) + $no + 1;
+		}
 		if(!isset($this->invocations[$no - 1])) {
 			throw new NonExistentInvocationException("Invocation no. $no doesn't exists");
 		}

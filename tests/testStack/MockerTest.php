@@ -85,6 +85,19 @@ class MockerTest extends PHPUnit_Framework_TestCase
 	
 	/**
 	 * @test
+	 * @expectedException \Mocker\UnknownVerifyMethodException
+	 */
+	public function unknownVerifyMethod()
+	{
+		$mocker = $this->createMocker();
+	
+		$mock = $mocker->createMock();
+	
+		$mocker->verifyMethod('¨kolo');
+	}
+	
+	/**
+	 * @test
 	 */
 	public function numberOfInvocations()
 	{
@@ -114,9 +127,14 @@ class MockerTest extends PHPUnit_Framework_TestCase
 		
 		$mock->sum(1,2);
 		$mock->sum(3,4);
+		$mock->sum(5,6);
 		
 		$mocker->verifyMethod('sum')->invocationNo(1)->expectedParams(1,2);
 		$mocker->verifyMethod('sum')->invocationNo(2)->expectedParams(3,4);
+		$mocker->verifyMethod('sum')->invocationNo(3)->expectedParams(5,6);
+		$mocker->verifyMethod('sum')->invocationNo(-1)->expectedParams(5,6);
+		$mocker->verifyMethod('sum')->invocationNo(-2)->expectedParams(3,4);
+		$mocker->verifyMethod('sum')->invocationNo(-3)->expectedParams(1,2);
 	}
 	
 	/**
