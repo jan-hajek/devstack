@@ -18,12 +18,12 @@ class VerifyMethod
 		$this->testCase = $testCase;
 		$this->methodName = $methodName;
 		
-		$self = $this;
+		$invocations = &$this->invocations;
 	
-		$callBackFunction = function() use ($self, $returnParam, $mock){
+		$callBackFunction = function() use (&$invocations, $returnParam, $methodName, $testCase, $mock){
 			$inputParams = func_get_args();
 				
-			$self->invocations[] = new VerifyMethodInvocation($inputParams, $this->methodName, $self->testCase);
+			$invocations[] = new VerifyMethodInvocation($inputParams, $methodName, $testCase);
 				
 			$returnValue = $returnParam['value'];
 			$returnType = $returnParam['type'];
@@ -42,7 +42,7 @@ class VerifyMethod
 					return isset($inputParams[$returnValue]) ? $inputParams[$returnValue] : null;
 					break;
 				case 'callback':
-					$inputParams[] = count($self->invocations);
+					$inputParams[] = count($invocations);
 					return call_user_func_array($returnValue, $inputParams);
 					break;
 			}
