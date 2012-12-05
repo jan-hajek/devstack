@@ -56,16 +56,19 @@ class VerifyMethod
 	public function calledOnce()
 	{
 		$this->timesCalledTest(1);
+		return $this;
 	}
 	
 	public function calledExactly($count)
 	{
 		$this->timesCalledTest($count);
+		return $this;
 	}
 	
 	public function calledNever()
 	{
 		$this->timesCalledTest(0);
+		return $this;
 	}
 	
 	private function timesCalledTest($expectedTimes)
