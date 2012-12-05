@@ -203,6 +203,17 @@ class MockerTest extends PHPUnit_Framework_TestCase
 		$mock = $mockvator->createMock();
 		$this->assertEquals(11, $mock->sum(5, 6));
 	}
+	 
+	/**
+	 * @test
+	 */
+	public function setPublicProperty()
+	{
+		$mockvator = $this->createMocker();
+		$mock = $mockvator->createMock();
+		$mock->publicProperty = 10;
+		$this->assertEquals(10, $mock->publicProperty);
+	}
 	
 	private function createMocker()
 	{
@@ -212,6 +223,8 @@ class MockerTest extends PHPUnit_Framework_TestCase
 
 class MockBuilderTestClass
 {
+	public $publicProperty;
+	
 	public function sum($a, $b = null)
 	{
 		return $a + b;
