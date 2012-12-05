@@ -93,7 +93,7 @@ class MockerTest extends PHPUnit_Framework_TestCase
 	
 		$mock = $mocker->createMock();
 	
-		$mocker->verifyMethod('¨kolo');
+		$mocker->verifyMethod('sum');
 	}
 	
 	/**
@@ -199,9 +199,9 @@ class MockerTest extends PHPUnit_Framework_TestCase
 	 */
 	public function callUndeclaredFunction()
 	{
-		$mockvator = $this->createMocker();
-		$mock = $mockvator->createMock();
-		$this->assertEquals(11, $mock->sum(5, 6));
+		$mocker = $this->createMocker();
+		$mock = $mocker->createMock();
+		$mock->sum(5, 6);
 	}
 	 
 	/**
@@ -209,15 +209,15 @@ class MockerTest extends PHPUnit_Framework_TestCase
 	 */
 	public function setPublicProperty()
 	{
-		$mockvator = $this->createMocker();
-		$mock = $mockvator->createMock();
+		$mocker = $this->createMocker();
+		$mock = $mocker->createMock();
 		$mock->publicProperty = 10;
 		$this->assertEquals(10, $mock->publicProperty);
 	}
 	
 	private function createMocker()
 	{
-		return new \Mocker\Mock('MockBuilderTestClass', $this);
+		return new \Mocker\Mocker('MockBuilderTestClass', $this);
 	}
 }
 
@@ -228,6 +228,11 @@ class MockBuilderTestClass
 	public function sum($a, $b = null)
 	{
 		return $a + b;
+	}
+	
+	public function divide($a, $b)
+	{
+		return $a / b;
 	}
 	
 	private function privateMethod($a = null, $b = null)
