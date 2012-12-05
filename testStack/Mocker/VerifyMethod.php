@@ -110,7 +110,7 @@ class VerifyMethodInvocation
 	public function expectedParams()
 	{
 		$expectedParams = func_get_args();
-		$this->testCase->assertEquals(
+		$this->testCase->assertSame(
 			$expectedParams,
 			$this->params,
 			"Expected params for method {$this->methodName}"
