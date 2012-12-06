@@ -141,7 +141,7 @@ class MockerTest extends PHPUnit_Framework_TestCase
 	 * @test
 	 * @expectedException \Mocker\NonExistentInvocationException
 	 */
-	public function invocations()
+	public function nonExistedInvocation()
 	{
 		$mocker = $this->createMocker();
 		$mocker->mockMethod('sum');
@@ -151,6 +151,21 @@ class MockerTest extends PHPUnit_Framework_TestCase
 		$mock->sum(1,2);
 		
 		$mocker->verifyMethod('sum')->invocationNo(2);
+	}
+	
+	/**
+	 * @test
+	 */
+	public function exceptionLikeExpectedParam()
+	{
+		$mocker = $this->createMocker();
+		$mocker->mockMethod('sum')->willReturn(1);
+		$mock = $mocker->createMock();
+	
+		$e = new InvalidArgumentException("asd");
+		$mock->sum($e);
+	
+		$mocker->verifyMethod('sum')->invocationNo(1)->expectedParams($e, null);
 	}
 	
 	/**

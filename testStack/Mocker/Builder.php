@@ -61,6 +61,7 @@ class Builder
 		if(!isset($this->verifyMethods[$name])) {
 			$this->verifyMethods[$name] = new VerifyMethod(
 				$name,
+				$this->className,
 				$this
 			);
 		}
@@ -159,7 +160,7 @@ class Builder
 	
 	public function addInvocation($methodName, $inputParams)
 	{
-		$this->invocations[$methodName][] = new VerifyMethodInvocation($inputParams, $methodName);
+		$this->invocations[$methodName][] = new VerifyMethodInvocation($inputParams, $this->className . '::' . $methodName);
 	}
 }
 
