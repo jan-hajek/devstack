@@ -1,0 +1,17 @@
+projectName: example
+debug: false
+excluded:
+  #./libs/*	
+  ./libs/Nette/*
+  ./temp/*
+  ./docs/*
+  ./libs/Asdf/Diagnostics/*
+  ./log/*
+  ./www/*
+watchers:
+  phpUnit:
+    ext: php
+    script: phpunit -c ./tests/
+  sass:
+    ext: sass
+    script: sass %%path %%dir/../%%basename.css -t compressed --trace
