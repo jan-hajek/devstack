@@ -17,9 +17,14 @@ end
 
 ################### functions ######################
 
-def getConfig(configPath) 
+def getConfig(configPath, configSection) 
 	require 'yaml'
 	config = YAML.load_file(configPath)
+	if(config[configSection].nil?)
+		redText "config section named #{configSection} missing\n"
+		exit 1
+	end
+	config = config[configSection]
 	return config
 end
 
@@ -83,25 +88,30 @@ end
 
 ################### args ######################
 
-ARGV.reverse!
-configPath = ARGV.pop
-currentDir = './'
 
-while item = ARGV.pop do
-	if(item == '--help')
-		print "Usage: watcher.rb <configPath>\n"
-      	print "Config options: \n"
-      	line="     %-30s %s\n"
-      	printf "#{line}", "[debug]", "true|false"
-      	printf "#{line}", "watchers", "{ext, script}"
+ARGV.each { |param|
+	if(param == '--help')
+		print "Usage: watcher.rb <configPath> <configSection>\n"
+      	print "Yaml config options: (use space to indent, tabs are not allowed)\n"
+      	print "coming soon ..., check example in config.yaml\n"
 		exit
 	end
-end
+}
+
+ARGV.reverse!
+configPath = ARGV.pop
+configSection = ARGV.pop
+currentDir = './'
 
 ################### check ######################
 
 if (configPath == nil)
-	redText "config path is empty\n"
+	redText "config path is empty, user watcher.rb --help\n"
+	exit
+end
+
+if (configSection == nil)
+	redText "config section is empty, user watcher.rb --help\n"
 	exit
 end
 
@@ -117,7 +127,7 @@ end
 
 ################### run ######################
 
-config = getConfig configPath
+config = getConfig configPath, configSection
 debug = config['debug'].nil? ? false : config['debug']
 watchers = config['watchers']
 

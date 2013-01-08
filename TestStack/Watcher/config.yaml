@@ -1,21 +1,22 @@
-projectName: example
-debug: false
-excluded:
-  #./libs/*	
-  ./libs/Nette/*
-  ./temp/*
-  ./docs/*
-  ./libs/Asdf/Diagnostics/*
-  ./log/*
-  ./www/*
-watchers:
-  phpUnit:
-    ext: php
-    script: phpunit -c %%projectDir/tests/
-    #outputAlways: true
-  sniffer:
-    ext: php
-    script: "%%projectDir/TestStack/CodeSniffer/phpcs --standard=TestStack --tab-width=4 -s %%path"
-  sass:
-    ext: sass
-    script: sass %%path %%dir/../%%basename.css -t compressed --trace
+example:
+  projectName: example
+  debug: false
+  excluded:
+    #./libs/*	
+    ./libs/Nette/*
+    ./temp/*
+    ./docs/*
+    ./libs/Asdf/Diagnostics/*
+    ./log/*
+    ./www/*
+  watchers:
+    phpUnit:
+      ext: php
+      script: phpunit -c %%projectDir/tests/
+      #outputAlways: true
+    sniffer:
+      ext: php
+      script: "%%projectDir/TestStack/CodeSniffer/phpcs --standard=TestStack --tab-width=4 -s %%path"
+    sass:
+      ext: sass
+      script: sass %%path %%dir/../%%basename.css -t compressed --trace
