@@ -12,6 +12,7 @@ watchers:
   phpUnit:
     ext: php
     script: phpunit -c %%projectDir/tests/
+    #outputAlways: true
   sniffer:
     ext: php
     script: "%%projectDir/TestStack/CodeSniffer/phpcs --standard=TestStack --tab-width=4 -s %%path"

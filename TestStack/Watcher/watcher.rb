@@ -15,6 +15,72 @@ def shellCommandExists(command)
 	return !output.empty?
 end
 
+################### functions ######################
+
+def getConfig(configPath) 
+	require 'yaml'
+	config = YAML.load_file(configPath)
+	return config
+end
+
+def createFindScript(currentDir, config) 
+	extensions = Array.new
+	config['watchers'].each { |name, params|
+		extensions.push ("-name '*.#{params['ext']}'") 
+	}
+	
+	excluded = Array.new
+	config['excluded'].split(' ').each { |name|
+		excluded.push ("! -path '#{name}'") 
+	}
+	
+	return "find #{currentDir} #{excluded.join(' ')} -type f #{extensions.join(' -or ')} "
+end
+
+def printDebugInfo(findScript, watchers)
+	redText " ! debug mode !\n"
+	
+    print "find script: "
+	greenText "#{findScript}\n"
+	
+	print "watchers:\n"
+	watchers.each { |name, params|
+		print "    #{name} - ext: "
+		greenText "#{params['ext']}"
+		print ", script: "
+		greenText "#{params['script']}\n"
+	}
+end
+
+def checkFilesCount(findScript)
+	monitoredFilesCount = `#{findScript} | wc -l`
+
+	if (monitoredFilesCount == 0)
+		redtext "no files to watch\n"
+		exit 1
+	end
+	
+	print "\n---------------------\nnumber of monitored files: "
+	greenText "#{monitoredFilesCount}"
+end
+
+def prepareScript(script, filePath, projectDir) 
+	name = File.basename(filePath)
+	basename = File.basename(filePath, File.extname(filePath))
+	ext = File.extname(filePath).gsub(".", "")
+	dir = File.dirname(filePath)
+	
+	script = script
+		.gsub("%%basename", basename)
+		.gsub("%%dir", dir)
+		.gsub("%%ext", ext)
+		.gsub("%%name", name)
+		.gsub("%%path", filePath)
+		.gsub("%%projectDir", projectDir)
+		
+	return script
+end
+
 ################### args ######################
 
 ARGV.reverse!
@@ -51,93 +117,56 @@ end
 
 ################### run ######################
 
-require 'yaml'
-config = YAML.load_file(configPath)
+config = getConfig configPath
 debug = config['debug'].nil? ? false : config['debug']
 watchers = config['watchers']
 
-extensions = Array.new
-watchers.each { |name, params|
-	extensions.push ("-name '*.#{params['ext']}'") 
-}
-
-excluded = Array.new
-config['excluded'].split(' ').each { |name|
-	excluded.push ("! -path '#{name}'") 
-}
-
-findScript = "find #{currentDir} #{excluded.join(' ')} -type f #{extensions.join(' -or ')} "
+findScript = createFindScript currentDir, config
 
 greenText "\nproject name: #{config['projectName']}"
 if(debug)
-	redText " ! debug mode !\n"
-	
-    print "find script: "
-	greenText "#{findScript}\n"
-
-	#puts findScriptExecutable
-	
-	print "watchers:\n"
-	watchers.each { |name, params|
-		print "    #{name} - ext: "
-		greenText "#{params['ext']}"
-		print ", script: "
-		greenText "#{params['script']}\n"
-	}
-	
+	printDebugInfo findScript,watchers
 end
 
 loop do
-	findScriptExecutable = "`#{findScript}`"
-	monitoredFilesCount = `#{findScript} | wc -l`
+	checkFilesCount findScript
 	
-	if (monitoredFilesCount == 0)
-		redtext "no files to watch\n"
-		exit 1
-	end
-	
-	puts "\n---------------------"
-	
-	print "number of monitored files: "
-	greenText "#{monitoredFilesCount}"
 	print "waiting for change ... \n"
-	
 	begin
-		path= `inotifywait --format "%w" -qre modify,delete,create,move #{findScriptExecutable}`
+		path= `inotifywait --format "%w" -qre modify,delete,create,move #{"`#{findScript}`"}`
 	rescue Interrupt => e
 		redText "\ninterrupted\n"
 		exit
 	end
 	
 	path = path.strip
-	name = File.basename(path)
-	basename = File.basename(path, File.extname(path))
 	ext = File.extname(path).gsub(".", "")
-	dir = File.dirname(path)
 	
 	print "change in: "
 	greenText "#{path}\n"
 
-	watchers.each { |name, params|
+	watchers.each { |watcherName, params|
 		if ( ext.eql? params['ext'])
-			print "used watcher: "
-			greenText "#{name}\n"
+			print "used watcher: #{watcherName}"
 			
-			script = params['script']
-				.gsub("%%basename", basename)
-				.gsub("%%dir", dir)
-				.gsub("%%ext", ext)
-				.gsub("%%name", name)
-				.gsub("%%path", path)
-				.gsub("%%projectDir", currentDir)
+			script = prepareScript params['script'], path, currentDir
+
 			if(debug)
-				print "used script: "
-				greenText "#{script}\n"
+				print "- script: ";	greenText "#{script}\n"
 			else
-				system script
+				output=`#{script}`  
+				result=$?.success?
+				if(result)
+					greenText " ok\n"
+				else
+					redText " error\n"
+				end
+				
+				outputAlways = params['outputAlways'].nil? ? false : params['outputAlways']
+				if(outputAlways || !result)
+					puts output
+				end
 			end
 		end
 	}
-	
 end
-
