@@ -11,7 +11,10 @@ excluded:
 watchers:
   phpUnit:
     ext: php
-    script: phpunit -c ./tests/
+    script: phpunit -c %%projectDir/tests/
+  sniffer:
+    ext: php
+    script: "%%projectDir/TestStack/CodeSniffer/phpcs --standard=TestStack --tab-width=4 -s %%path"
   sass:
     ext: sass
     script: sass %%path %%dir/../%%basename.css -t compressed --trace

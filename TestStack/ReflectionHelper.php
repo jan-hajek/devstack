@@ -2,29 +2,30 @@
 class ReflectionHelper
 {
 	/**
-	 * @param string|class $class
+	 *
+	 * @param $class string|class
 	 * @throws InvalidArgumentException
 	 * @return Reflector
 	 */
-	public static function getObject($class)
+	public static function getObject ($class)
 	{
-		if(is_string($class)){
+		if (is_string($class)) {
 			$refObj = new ReflectionClass($class);
-		}elseif(is_object($class)){
-			if($class instanceof Reflector) {
+		} elseif (is_object($class)) {
+			if ($class instanceof Reflector) {
 				return $class;
 			}
 			$refObj = new ReflectionObject($class);
-		}else{
+		} else {
 			throw new InvalidArgumentException('parametr class musi byt string nebo objekt');
 		}
 		return $refObj;
 	}
-	
+
 	/**
 	 *
-	 * @param object $class
-	 * @param string $name
+	 * @param $class object
+	 * @param $name string
 	 * @return ReflectionMethod
 	 */
 	public static function getMethod ($class, $name)
@@ -34,17 +35,18 @@ class ReflectionHelper
 		$method->setAccessible(true);
 		return $method;
 	}
-	
-	public static function isMethodStatic($class, $name)
+
+	public static function isMethodStatic ($class, $name)
 	{
 		$method = self::getMethod($class, $name);
 		return $method->isStatic();
 	}
-	
+
 	/**
-	 * @param object $class
-	 * @param string $name
-	 * @param array $args
+	 *
+	 * @param $class object
+	 * @param $name string
+	 * @param $args array
 	 * @return mixed
 	 */
 	public static function callMethod ($class, $name, $arg1 = null, $arg2 = null)
@@ -56,10 +58,11 @@ class ReflectionHelper
 		$method = self::getMethod($class, $name);
 		return $method->invokeArgs($class, $args);
 	}
-	
+
 	/**
-	 * @param string|object $class
-	 * @param string $propertyName
+	 *
+	 * @param $class string|object
+	 * @param $propertyName string
 	 * @return ReflectionProperty
 	 */
 	public static function getProperty ($class, $propertyName)
@@ -69,22 +72,22 @@ class ReflectionHelper
 		$refProp->setAccessible(true);
 		return $refProp;
 	}
-	
+
 	public static function getPropertyValue ($class, $propertyName)
 	{
 		$refProp = self::getProperty($class, $propertyName);
 		return $refProp->getValue($class);
 	}
-	
-	public static function setPropertyValue($class, $propertyName, $value)
+
+	public static function setPropertyValue ($class, $propertyName, $value)
 	{
 		$refObj = self::getObject($class);
 		$refProp = $refObj->getProperty($propertyName);
 		$refProp->setAccessible(true);
 		$refProp->setValue($class, $value);
 	}
-	
-	public static function setStaticPropertyValue($class, $propertyName, $value)
+
+	public static function setStaticPropertyValue ($class, $propertyName, $value)
 	{
 		$refProp = self::getProperty($class, $propertyName);
 		$refProp->setValue($value);

@@ -129,6 +129,7 @@ loop do
 				.gsub("%%ext", ext)
 				.gsub("%%name", name)
 				.gsub("%%path", path)
+				.gsub("%%projectDir", currentDir)
 			if(debug)
 				print "used script: "
 				greenText "#{script}\n"
