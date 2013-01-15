@@ -31,12 +31,12 @@ end
 def createFindScript(currentDir, config) 
 	extensions = Array.new
 	config['watchers'].each { |name, params|
-		extensions.push ("-name '*.#{params['ext']}'") 
+		extensions.push("-name '*.#{params['ext']}'") 
 	}
 	
 	excluded = Array.new
 	config['excluded'].split(' ').each { |name|
-		excluded.push ("! -path '#{name}'") 
+		excluded.push("! -path '#{name}'") 
 	}
 	
 	return "find #{currentDir} #{excluded.join(' ')} -type f #{extensions.join(' -or ')} "
@@ -75,13 +75,12 @@ def prepareScript(script, filePath, projectDir)
 	ext = File.extname(filePath).gsub(".", "")
 	dir = File.dirname(filePath)
 	
-	script = script
-		.gsub("%%basename", basename)
-		.gsub("%%dir", dir)
-		.gsub("%%ext", ext)
-		.gsub("%%name", name)
-		.gsub("%%path", filePath)
-		.gsub("%%projectDir", projectDir)
+	script = script.gsub("%%basename", basename)
+	script = script.gsub("%%dir", dir)
+	script = script.gsub("%%ext", ext)
+	script = script.gsub("%%name", name)
+	script = script.gsub("%%path", filePath)
+	script = script.gsub("%%projectDir", projectDir)
 		
 	return script
 end

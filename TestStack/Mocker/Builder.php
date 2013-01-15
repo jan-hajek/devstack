@@ -90,7 +90,9 @@ class Builder
 	{
 		$methods = $this->mockMethods;
 	
-		$this->mock = $this->testCase->getMock($this->className, array_keys($methods), array(), '', false, false, false);
+		$allMethodsNames = array_unique(array_merge(array_keys($methods), array_keys($this->originClassMethods)));
+		
+		$this->mock = $this->testCase->getMock($this->className, $allMethodsNames, array(), '', false, false, false);
 		foreach ($methods as $methodName => $method) {
 			$returnParam = isset($this->returns[$methodName]) ? $this->returns[$methodName] : null;
 			$this->buildMethod($methodName, $returnParam);
