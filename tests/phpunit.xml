@@ -1,6 +1,6 @@
 <phpunit bootstrap="TestBootstrap.php" colors="true" processIsolation="false">
 	<testsuites>
-		<testsuite name="TestStack">
+		<testsuite name="DevStack">
 			<directory>.</directory>
 		</testsuite>
 	</testsuites>

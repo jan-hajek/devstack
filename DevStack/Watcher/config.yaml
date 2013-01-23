@@ -16,7 +16,7 @@ example:
       #outputAlways: true
     sniffer:
       ext: php
-      script: "%%projectDir/TestStack/CodeSniffer/phpcs --standard=TestStack --tab-width=4 -s %%path"
+      script: "%%projectDir/DevStack/CodeSniffer/phpcs --standard=DevStack --tab-width=4 -s %%path"
     sass:
       ext: sass
       script: sass %%path %%dir/../%%basename.css -t compressed --trace

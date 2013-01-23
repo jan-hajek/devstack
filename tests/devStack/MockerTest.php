@@ -1,5 +1,5 @@
 <?php
-require_once PHPUNIT_PROJECT_DIR . '/TestStack/Mocker/Mocker.php';
+require_once PHPUNIT_PROJECT_DIR . '/DevStack/Mocker/Mocker.php';
 
 class MockerTest extends PHPUnit_Framework_TestCase
 {

@@ -31,15 +31,16 @@ end
 def createFindScript(currentDir, config) 
 	extensions = Array.new
 	config['watchers'].each { |name, params|
-		extensions.push("-name '*.#{params['ext']}'") 
+		extensions.push(params['ext']) 
 	}
+	extensions = extensions.uniq{|x| x}
 	
 	excluded = Array.new
 	config['excluded'].split(' ').each { |name|
 		excluded.push("! -path '#{name}'") 
 	}
 	
-	return "find #{currentDir} #{excluded.join(' ')} -type f #{extensions.join(' -or ')} "
+	return "find #{currentDir} #{excluded.join(' ')} -regex '.*\\.\\(#{extensions.join('\\|')}\\)'"
 end
 
 def printDebugInfo(findScript, watchers)
