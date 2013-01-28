@@ -117,7 +117,7 @@ end
 ################### check ######################
 
 if (configSection == nil)
-	redText "config section is empty, user watcher.rb --section\n"
+	redText "config section is empty, use watcher.rb --section\n"
 	exit
 end
 
