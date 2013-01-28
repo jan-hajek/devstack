@@ -70,48 +70,54 @@ def checkFilesCount(findScript)
 	greenText "#{monitoredFilesCount}"
 end
 
-def prepareScript(script, filePath, projectDir) 
+def prepareScript(script, filePath, projectDir, watcherDir) 
 	name = File.basename(filePath)
 	basename = File.basename(filePath, File.extname(filePath))
 	ext = File.extname(filePath).gsub(".", "")
 	dir = File.dirname(filePath)
 	
-	script = script.gsub("%%basename", basename)
-	script = script.gsub("%%dir", dir)
-	script = script.gsub("%%ext", ext)
-	script = script.gsub("%%name", name)
-	script = script.gsub("%%path", filePath)
-	script = script.gsub("%%projectDir", projectDir)
+	script = script.gsub("%fileBasename%", basename)
+	script = script.gsub("%fileDir%", dir)
+	script = script.gsub("%fileExt%", ext)
+	script = script.gsub("%fileName%", name)
+	script = script.gsub("%filePath%", filePath)
+	script = script.gsub("%projectDir%", projectDir)
+	script = script.gsub("%watcherDir%", watcherDir)
 		
 	return script
 end
 
 ################### args ######################
 
-
-ARGV.each { |param|
-	if(param == '--help')
-		print "Usage: watcher.rb <configPath> <configSection>\n"
-      	print "Yaml config options: (use space to indent, tabs are not allowed)\n"
-      	print "coming soon ..., check example in config.yaml\n"
-		exit
-	end
-}
-
-ARGV.reverse!
-configPath = ARGV.pop
-configSection = ARGV.pop
+watcherDir = File.expand_path(File.dirname(__FILE__))
 currentDir = './'
+configSection = nil
+configPath = "#{watcherDir}/config.yaml"
+
+require 'getoptlong'
+opts = GetoptLong.new(
+  [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
+  [ '--section', GetoptLong::REQUIRED_ARGUMENT ],
+  [ '--config', GetoptLong::OPTIONAL_ARGUMENT ]
+)
+opts.each do |opt, arg|
+	case opt
+		when '--help'
+      		print "Usage: watcher.rb --config=<configPath> --section=<configSection>\n"
+	      	print "Yaml config options: (use space to indent, tabs are not allowed)\n"
+	      	print "coming soon ..., check example in config.yaml\n"
+			exit
+    	when '--section'
+      		configSection = arg
+    	when '--config'
+			configPath = arg
+	end
+end
 
 ################### check ######################
 
-if (configPath == nil)
-	redText "config path is empty, user watcher.rb --help\n"
-	exit
-end
-
 if (configSection == nil)
-	redText "config section is empty, user watcher.rb --help\n"
+	redText "config section is empty, user watcher.rb --section\n"
 	exit
 end
 
@@ -159,7 +165,7 @@ loop do
 		if ( ext.eql? params['ext'])
 			print "used watcher: #{watcherName}"
 			
-			script = prepareScript params['script'], path, currentDir
+			script = prepareScript params['script'], path, currentDir, watcherDir
 
 			if(debug)
 				print "- script: ";	greenText "#{script}\n"
