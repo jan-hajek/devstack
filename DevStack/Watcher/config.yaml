@@ -12,11 +12,14 @@ example:
   watchers:
     phpUnit:
       ext: php
-      script: phpunit -c %%projectDir/tests/
+      script: phpunit -c %projectDir%/tests/
       #outputAlways: true
     sniffer:
       ext: php
-      script: "%%projectDir/DevStack/CodeSniffer/phpcs --standard=DevStack --tab-width=4 -s %%path"
+      script: "phpcs --standard=%watcherDir%/phpcs.xml --tab-width=4 -s %filePath%"
+    phpmd:
+      ext: php
+      script: "phpmd %filePath% text %watcherDir%/phpmd.xml"
     sass:
       ext: sass
-      script: sass %%path %%dir/../%%basename.css -t compressed --trace
+      script: sass %filePath% %fileDir%/../%fileBasename%.css -t compressed --trace
