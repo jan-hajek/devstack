@@ -29,18 +29,18 @@ def getConfig(configPath, configSection)
 end
 
 def createFindScript(currentDir, config) 
-	extensions = Array.new
+	patterns = Array.new
 	config['watchers'].each { |name, params|
-		extensions.push(params['ext']) 
+		patterns.push("\\(#{params['pattern']}\\)") 
 	}
-	extensions = extensions.uniq{|x| x}
+	patterns = patterns.uniq{|x| x}
 	
 	excluded = Array.new
 	config['excluded'].split(' ').each { |name|
 		excluded.push("! -path '#{name}'") 
 	}
 	
-	return "find #{currentDir} #{excluded.join(' ')} -regex '.*\\.\\(#{extensions.join('\\|')}\\)'"
+	return "find #{currentDir} #{excluded.join(' ')} -regex '#{patterns.join('\\|')}'"
 end
 
 def printDebugInfo(findScript, watchers)
@@ -51,8 +51,8 @@ def printDebugInfo(findScript, watchers)
 	
 	print "watchers:\n"
 	watchers.each { |name, params|
-		print "    #{name} - ext: "
-		greenText "#{params['ext']}"
+		print "    #{name} - pattern: "
+		greenText "#{params['pattern']}"
 		print ", script: "
 		greenText "#{params['script']}\n"
 	}
@@ -61,8 +61,8 @@ end
 def checkFilesCount(findScript)
 	monitoredFilesCount = `#{findScript} | wc -l`
 
-	if (monitoredFilesCount == 0)
-		redtext "no files to watch\n"
+	if (Integer(monitoredFilesCount) == 0)
+		redText "\nno files to watch\n\n"
 		exit 1
 	end
 	
@@ -76,13 +76,13 @@ def prepareScript(script, filePath, projectDir, watcherDir)
 	ext = File.extname(filePath).gsub(".", "")
 	dir = File.dirname(filePath)
 	
-	script = script.gsub("%fileBasename%", basename)
-	script = script.gsub("%fileDir%", dir)
-	script = script.gsub("%fileExt%", ext)
-	script = script.gsub("%fileName%", name)
-	script = script.gsub("%filePath%", filePath)
-	script = script.gsub("%projectDir%", projectDir)
-	script = script.gsub("%watcherDir%", watcherDir)
+	script = script.gsub("@fileBasename", basename)
+	script = script.gsub("@fileDir", dir)
+	script = script.gsub("@fileExt", ext)
+	script = script.gsub("@fileName", name)
+	script = script.gsub("@filePath", filePath)
+	script = script.gsub("@projectDir", projectDir)
+	script = script.gsub("@watcherDir", watcherDir)
 		
 	return script
 end
@@ -156,13 +156,12 @@ loop do
 	end
 	
 	path = path.strip
-	ext = File.extname(path).gsub(".", "")
 	
 	print "change in: "
 	greenText "#{path}\n"
 
 	watchers.each { |watcherName, params|
-		if ( ext.eql? params['ext'])
+		if ( /#{params['pattern']}/.match(path) )
 			print "used watcher: #{watcherName}"
 			
 			script = prepareScript params['script'], path, currentDir, watcherDir

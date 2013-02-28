@@ -1,25 +1,22 @@
 example:
   projectName: example
-  debug: false
+  debug: true
   excluded:
-    #./libs/*	
-    ./libs/Nette/*
     ./temp/*
-    ./docs/*
-    ./libs/Asdf/Diagnostics/*
-    ./log/*
-    ./www/*
   watchers:
     phpUnit:
-      ext: php
-      script: phpunit -c %projectDir%/tests/
-      #outputAlways: true
+      pattern: .*\.php
+      script: phpunit -c @projectDir/tests/
+      outputAlways: true
     sniffer:
-      ext: php
-      script: "phpcs --standard=%watcherDir%/phpcs.xml --tab-width=4 -s %filePath%"
+      pattern: .*\.php
+      script: "phpcs --standard=@projectDir/phpcs.xml --tab-width=4 -s @filePath"
     phpmd:
-      ext: php
-      script: "phpmd %filePath% text %watcherDir%/phpmd.xml"
+      pattern: .*\.php
+      script: "phpmd @filePath text @projectDir/phpmd.xml"
+    phpcpd:
+      pattern: .*\.php
+      script: "phpcpd @projectDir/client"
     sass:
-      ext: sass
-      script: sass %filePath% %fileDir%/../%fileBasename%.css -t compressed --trace
+      pattern: .*\.sass
+      script: sass @filePath @fileDir/../@fileBasename.css -t compressed --trace
