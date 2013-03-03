@@ -20,3 +20,6 @@ example:
     sass:
       pattern: .*\.sass
       script: sass @filePath @fileDir/../@fileBasename.css -t compressed --trace
+    less:
+      pattern: .*\.less
+      script: lessc @filePath @fileDir/../@fileBasename.css --yui-compress
