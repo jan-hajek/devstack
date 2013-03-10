@@ -23,3 +23,6 @@ example:
     less:
       pattern: .*\.less
       script: lessc @filePath @fileDir/../@fileBasename.css --yui-compress
+    typescript:
+      pattern: .*\.ts
+      script: tsc --out @fileDir/@fileBasename.js @filePath
