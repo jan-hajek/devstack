@@ -28,6 +28,12 @@ def getConfig(configPath, configSection)
 	return config
 end
 
+def getWatchers(config) 
+	return config['watchers'].select { |name, params|
+		params['disable'].nil? || params['disable'] == false
+	}
+end
+
 def createFindScript(currentDir, config) 
 	patterns = Array.new
 	config['watchers'].each { |name, params|
@@ -135,7 +141,7 @@ end
 
 config = getConfig configPath, configSection
 debug = config['debug'].nil? ? false : config['debug']
-watchers = config['watchers']
+watchers = getWatchers config
 
 findScript = createFindScript currentDir, config
 
