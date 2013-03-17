@@ -10,6 +10,18 @@ def redText(string)
 	system "printf \"\e[1;31m#{string}\e[0m\""
 end
 
+def yellowLine(string) 
+	system "printf \"\x1b[30;43m\x1b[2K#{string}\n\x1b[0m\x1b[2K\""
+end
+
+def greenLine(string) 
+	system "printf \"\x1b[30;42m\x1b[2K#{string}\n\x1b[0m\x1b[2K\""
+end
+
+def redLine(string) 
+	system "printf \"\x1b[37;41m\x1b[2K#{string}\n\x1b[0m\x1b[2K\""
+end
+
 def shellCommandExists(command) 
 	output = `command -v #{command} 2>&1`
 	return !output.empty?
@@ -50,17 +62,19 @@ def createFindScript(currentDir, config)
 end
 
 def printDebugInfo(findScript, watchers)
-	redText " ! debug mode !\n"
+	print "\n"
+	yellowLine "! debug mode !"
+	print "\n"
 	
-    print "find script: "
-	greenText "#{findScript}\n"
+    print "find script\n"
+	print "    #{findScript}\n"
 	
-	print "watchers:\n"
+	print "watchers\n"
 	watchers.each { |name, params|
 		print "    #{name} - pattern: "
-		greenText "#{params['pattern']}"
+		print "#{params['pattern']}"
 		print ", script: "
-		greenText "#{params['script']}\n"
+		print "#{params['script']}\n"
 	}
 end
 
@@ -73,7 +87,7 @@ def checkFilesCount(findScript)
 	end
 	
 	print "\n---------------------\nnumber of monitored files: "
-	greenText "#{monitoredFilesCount}"
+	print "#{monitoredFilesCount}"
 end
 
 def prepareScript(script, filePath, projectDir, watcherDir) 
@@ -145,7 +159,10 @@ watchers = getWatchers config
 
 findScript = createFindScript currentDir, config
 
-greenText "\nproject name: #{config['projectName']}"
+
+
+print "\nproject name: #{config['projectName']}"
+
 if(debug)
 	printDebugInfo findScript,watchers
 end
@@ -163,31 +180,51 @@ loop do
 	
 	path = path.strip
 	
-	print "change in: "
-	greenText "#{path}\n"
+	print "change in\n"
+	print "    #{path}\n"
 
+	isValid = true
+
+	print "used watchers\n"
 	watchers.each { |watcherName, params|
 		if ( /#{params['pattern']}/.match(path) )
-			print "used watcher: #{watcherName}"
+			print "    #{watcherName}"
 			
 			script = prepareScript params['script'], path, currentDir, watcherDir
 
 			if(debug)
-				print "- script: ";	greenText "#{script}\n"
+				print " - script: ";	print "#{script}\n"
 			else
 				output=`#{script}`  
 				result=$?.success?
+				
+				print ", result: "
+				
 				if(result)
-					greenText " ok\n"
+					print "OK\n"
 				else
-					redText " error\n"
+					isValid = false
+					redText "FAILURES\n"
 				end
+
 				
 				outputAlways = params['outputAlways'].nil? ? false : params['outputAlways']
 				if(outputAlways || !result)
+					print "\n\n-----------------------------------------------------\n"
 					puts output
+					print "-----------------------------------------------------\n\n\n"
 				end
 			end
 		end
 	}
+	
+	print "\n"
+	
+	if(!debug)
+		if(isValid)
+			greenLine "OK"
+		else
+			redLine "FAILURES!"
+		end
+	end
 end
