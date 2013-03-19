@@ -174,8 +174,13 @@ loop do
 	begin
 		path= `inotifywait --format "%w" -qre modify,delete,create,move #{"`#{findScript}`"}`
 	rescue Interrupt => e
-		redText "\ninterrupted\n"
-		exit
+		puts "\nExit? y/n [n]"
+		answer = gets.chomp
+		if answer != "" || answer == "y"
+			print "\nBye\n\n"
+			exit
+		end
+		next
 	end
 	
 	path = path.strip
