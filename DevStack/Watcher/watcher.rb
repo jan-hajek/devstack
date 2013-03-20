@@ -33,7 +33,11 @@ def getConfig(configPath, configSection)
 	require 'yaml'
 	config = YAML.load_file(configPath)
 	if(config[configSection].nil?)
-		redText "config section named #{configSection} missing\n"
+		redText "config section named #{configSection} missing"
+		puts ", available: \n"
+		config.each { |sectionName, params|
+			puts "#{sectionName}\n"
+		}
 		exit 1
 	end
 	config = config[configSection]
@@ -153,6 +157,8 @@ end
 
 ################### run ######################
 
+puts "\nConfiguration read from #{configPath}\n\n"
+
 config = getConfig configPath, configSection
 debug = config['debug'].nil? ? false : config['debug']
 watchers = getWatchers config
@@ -174,12 +180,13 @@ loop do
 	begin
 		path= `inotifywait --format "%w" -qre modify,delete,create,move #{"`#{findScript}`"}`
 	rescue Interrupt => e
-		puts "\nExit? y/n [n]"
-		answer = gets.chomp
-		if answer != "" || answer == "y"
-			print "\nBye\n\n"
+		begin
+			puts "\nPress to continue"
+			answer = gets.chomp
+		rescue Interrupt => e
+			puts "\n"
 			exit
-		end
+		end 
 		next
 	end
 	
