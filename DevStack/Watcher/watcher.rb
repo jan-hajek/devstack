@@ -181,7 +181,7 @@ loop do
 		path= `inotifywait --format "%w" -qre modify,delete,create,move #{"`#{findScript}`"}`
 	rescue Interrupt => e
 		begin
-			puts "\nPress to continue"
+			puts "\nPress any key to continue"
 			answer = gets.chomp
 		rescue Interrupt => e
 			puts "\n"
