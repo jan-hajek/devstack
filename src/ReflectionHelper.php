@@ -1,11 +1,18 @@
 <?php
+namespace Jelito\DevStack;
+
+use InvalidArgumentException;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionObject;
+use Reflector;
+
 class ReflectionHelper
 {
 	/**
-	 *
-	 * @param $class string|class
-	 * @throws InvalidArgumentException
-	 * @return Reflector
+	 * @param string|object $class
+	 * @return ReflectionClass|ReflectionObject
+	 * @throws \InvalidArgumentException
 	 */
 	public static function getObject ($class)
 	{
@@ -17,7 +24,7 @@ class ReflectionHelper
 			}
 			$refObj = new ReflectionObject($class);
 		} else {
-			throw new InvalidArgumentException('parametr class musi byt string nebo objekt');
+			throw new InvalidArgumentException('parameter class must be string or object');
 		}
 		return $refObj;
 	}
@@ -36,6 +43,11 @@ class ReflectionHelper
 		return $method;
 	}
 
+	/**
+	 * @param string|object $class
+	 * @param string $name
+	 * @return bool
+	 */
 	public static function isMethodStatic ($class, $name)
 	{
 		$method = self::getMethod($class, $name);
@@ -43,10 +55,10 @@ class ReflectionHelper
 	}
 
 	/**
-	 *
-	 * @param $class object
-	 * @param $name string
-	 * @param $args array
+	 * @param string|object $class
+	 * @param string $name
+	 * @param null $arg1
+	 * @param null $arg2
 	 * @return mixed
 	 */
 	public static function callMethod ($class, $name, $arg1 = null, $arg2 = null)
@@ -60,10 +72,9 @@ class ReflectionHelper
 	}
 
 	/**
-	 *
-	 * @param $class string|object
-	 * @param $propertyName string
-	 * @return ReflectionProperty
+	 * @param string|object $class
+	 * @param string $propertyName
+	 * @return \ReflectionProperty
 	 */
 	public static function getProperty ($class, $propertyName)
 	{
@@ -73,12 +84,22 @@ class ReflectionHelper
 		return $refProp;
 	}
 
+	/**
+	 * @param string|object $class
+	 * @param string $propertyName
+	 * @return mixed
+	 */
 	public static function getPropertyValue ($class, $propertyName)
 	{
 		$refProp = self::getProperty($class, $propertyName);
 		return $refProp->getValue($class);
 	}
 
+	/**
+	 * @param string|object $class
+	 * @param string $propertyName
+	 * @param mixed $value
+	 */
 	public static function setPropertyValue ($class, $propertyName, $value)
 	{
 		$refObj = self::getObject($class);
@@ -87,6 +108,11 @@ class ReflectionHelper
 		$refProp->setValue($class, $value);
 	}
 
+	/**
+	 * @param string|object $class
+	 * @param string $propertyName
+	 * @param mixed $value
+	 */
 	public static function setStaticPropertyValue ($class, $propertyName, $value)
 	{
 		$refProp = self::getProperty($class, $propertyName);
