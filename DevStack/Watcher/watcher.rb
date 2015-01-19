@@ -2,34 +2,34 @@
 
 ################### shell functions ######################
 
-def greenText(string) 
+def greenText(string)
 	system "printf \"\e[1;32m#{string}\e[0m\""
 end
 
-def redText(string) 
+def redText(string)
 	system "printf \"\e[1;31m#{string}\e[0m\""
 end
 
-def yellowLine(string) 
+def yellowLine(string)
 	system "printf \"\x1b[30;43m\x1b[2K#{string}\n\x1b[0m\x1b[2K\""
 end
 
-def greenLine(string) 
+def greenLine(string)
 	system "printf \"\x1b[30;42m\x1b[2K#{string}\n\x1b[0m\x1b[2K\""
 end
 
-def redLine(string) 
+def redLine(string)
 	system "printf \"\x1b[37;41m\x1b[2K#{string}\n\x1b[0m\x1b[2K\""
 end
 
-def shellCommandExists(command) 
+def shellCommandExists(command)
 	output = `command -v #{command} 2>&1`
 	return !output.empty?
 end
 
 ################### functions ######################
 
-def getConfig(configPath, configSection) 
+def getConfig(configPath, configSection)
 	require 'yaml'
 	config = YAML.load_file(configPath)
 	if(config[configSection].nil?)
@@ -44,35 +44,35 @@ def getConfig(configPath, configSection)
 	return config
 end
 
-def getWatchers(config) 
+def getWatchers(config)
 	return config['watchers'].select { |name, params|
 		params['disable'].nil? || params['disable'] == false
 	}
 end
 
-def createFindScript(currentDir, config) 
+def createFindScript(currentDir, config)
 	patterns = Array.new
 	config['watchers'].each { |name, params|
-		patterns.push("\\(#{params['pattern']}\\)") 
+		patterns.push("\\(#{params['pattern']}\\)")
 	}
 	patterns = patterns.uniq{|x| x}
-	
+
 	excluded = Array.new
 	config['excluded'].split(' ').each { |name|
-		excluded.push("! -path '#{name}'") 
+		excluded.push("! -path '#{name}'")
 	}
-	
-	return "find #{currentDir} #{excluded.join(' ')} -regex '#{patterns.join('\\|')}'"
+
+	return "find #{currentDir} #{excluded.join(' ')} -regex '#{patterns.join('\\|')}' 2>/dev/null"
 end
 
 def printDebugInfo(findScript, watchers)
 	print "\n"
 	yellowLine "! debug mode !"
 	print "\n"
-	
+
     print "find script\n"
 	print "    #{findScript}\n"
-	
+
 	print "watchers\n"
 	watchers.each { |name, params|
 		print "    #{name} - pattern: "
@@ -89,17 +89,17 @@ def checkFilesCount(findScript)
 		redText "\nno files to watch\n\n"
 		exit 1
 	end
-	
+
 	print "\n---------------------\nnumber of monitored files: "
 	print "#{monitoredFilesCount}"
 end
 
-def prepareScript(script, filePath, projectDir, watcherDir) 
+def prepareScript(script, filePath, projectDir, watcherDir)
 	name = File.basename(filePath)
 	basename = File.basename(filePath, File.extname(filePath))
 	ext = File.extname(filePath).gsub(".", "")
 	dir = File.dirname(filePath)
-	
+
 	script = script.gsub("@fileBasename", basename)
 	script = script.gsub("@fileDir", dir)
 	script = script.gsub("@fileExt", ext)
@@ -107,14 +107,14 @@ def prepareScript(script, filePath, projectDir, watcherDir)
 	script = script.gsub("@filePath", filePath)
 	script = script.gsub("@projectDir", projectDir)
 	script = script.gsub("@watcherDir", watcherDir)
-		
+
 	return script
 end
 
 ################### args ######################
 
 watcherDir = File.expand_path(File.dirname(__FILE__))
-currentDir = './'
+currentDir = '.'
 configSection = nil
 configPath = "#{watcherDir}/config.yaml"
 
@@ -175,10 +175,10 @@ end
 
 loop do
 	checkFilesCount findScript
-	
+
 	print "waiting for change ... \n"
 	begin
-		path= `inotifywait --format "%w" -qre modify,delete,create,move #{"`#{findScript}`"}`
+		path= %x[inotifywait --format "%w" -qe modify,delete,create,move,moved_to #{"`#{findScript}`"}]
 	rescue Interrupt => e
 		begin
 			puts "\nPress any key to continue"
@@ -186,12 +186,14 @@ loop do
 		rescue Interrupt => e
 			puts "\n"
 			exit
-		end 
+		end
 		next
 	end
-	
+
+    puts path
+
 	path = path.strip
-	
+
 	print "change in\n"
 	print "    #{path}\n"
 
@@ -201,17 +203,17 @@ loop do
 	watchers.each { |watcherName, params|
 		if ( /#{params['pattern']}/.match(path) )
 			print "    #{watcherName}"
-			
+
 			script = prepareScript params['script'], path, currentDir, watcherDir
 
 			if(debug)
 				print " - script: ";	print "#{script}\n"
 			else
-				output=`#{script}`  
+				output=`#{script}`
 				result=$?.success?
-				
+
 				print ", result: "
-				
+
 				if(result)
 					print "OK\n"
 				else
@@ -219,7 +221,7 @@ loop do
 					redText "FAILURES\n"
 				end
 
-				
+
 				outputAlways = params['outputAlways'].nil? ? false : params['outputAlways']
 				if(outputAlways || !result)
 					print "\n\n-----------------------------------------------------\n"
@@ -229,9 +231,9 @@ loop do
 			end
 		end
 	}
-	
+
 	print "\n"
-	
+
 	if(!debug)
 		if(isValid)
 			greenLine "OK"
