@@ -1,6 +1,8 @@
 <?php
 namespace Jelito\DevStack\Mocker;
 
+use Jelito\DevStack\Mocker\Exception\NonExistentInvocationException;
+
 class VerifyMethod
 {
 	/**

@@ -16,7 +16,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 		$mocker = $this->createMocker();
 		$mocker->mockMethod('sum')->willReturn(1);
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$this->assertEquals(1, $mock->sum(1, 2));
 	}
@@ -31,7 +31,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 		$expectedException = new Exception('test');
 		$mocker->mockMethod('sum')->willThrow($expectedException);
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		try {
 			$mock->sum(1, 2);
@@ -49,7 +49,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 		$mocker->mockMethod('sum')->willReturnSelf();
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$this->assertSame($mock, $mock->sum(1));
 	}
@@ -63,7 +63,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 		$mocker->mockMethod('sum')->willReturnArgument(1);
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$this->assertEquals(1, $mock->sum(1));
 		$this->assertEquals(2, $mock->sum(2));
@@ -77,11 +77,11 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 	{
 		$mocker = $this->createMocker();
 
-		$mocker->mockMethod('sum')->willCallback(function ($a, $b, $invocationsCount) {
+		$mocker->mockMethod('sum')->willCallback(function ($a, $b) {
 			return $a * $b;
 		});
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$this->assertEquals(2, $mock->sum(1, 2));
 		$this->assertEquals(12, $mock->sum(3, 4));
@@ -90,13 +90,11 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\UnknownVerifyMethodException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\UnknownVerifyMethodException
 	 */
 	public function unknownVerifyMethod()
 	{
 		$mocker = $this->createMocker();
-
-		$mock = $mocker->createMock();
 
 		$mocker->verifyMethod('sum');
 	}
@@ -109,7 +107,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 		$mocker = $this->createMocker();
 		$mocker->mockMethod('sum');
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$mocker->verifyMethod('sum')->calledNever();
 
@@ -128,7 +126,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 		$mocker = $this->createMocker();
 		$mocker->mockMethod('sum');
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$mock->sum(1, 2);
 		$mock->sum(3, 4);
@@ -144,14 +142,14 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\NonExistentInvocationException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\NonExistentInvocationException
 	 */
 	public function nonExistedInvocation()
 	{
 		$mocker = $this->createMocker();
 		$mocker->mockMethod('sum');
 
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$mock->sum(1, 2);
 
@@ -165,7 +163,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 	{
 		$mocker = $this->createMocker();
 		$mocker->mockMethod('sum')->willReturn(1);
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 
 		$e = new \InvalidArgumentException("asd");
 		$mock->sum($e);
@@ -175,7 +173,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\StaticMethodException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\StaticMethodException
 	 */
 	public function tryDeclareStaticFunction()
 	{
@@ -185,7 +183,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\PrivateMethodException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\PrivateMethodException
 	 */
 	public function tryDeclarePrivateFunction()
 	{
@@ -195,7 +193,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\ProtectedMethodException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\ProtectedMethodException
 	 */
 	public function tryDeclareProtectedFunction()
 	{
@@ -205,7 +203,7 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\NonExistentMethodCallException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\NonExistentMethodException
 	 */
 	public function tryDeclareNonExistentMethod()
 	{
@@ -215,12 +213,22 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 
 	/**
 	 * @test
-	 * @expectedException \Jelito\DevStack\Mocker\UndeclaredMethodInvocationException
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\FinalMethodException
+	 */
+	public function tryDeclareFinalMethod()
+	{
+		$mocker = $this->createMocker();
+		$mocker->mockMethod('finalMethod');
+	}
+
+	/**
+	 * @test
+	 * @expectedException \Jelito\DevStack\Mocker\Exception\UndeclaredMethodInvocationException
 	 */
 	public function callUndeclaredFunction()
 	{
 		$mocker = $this->createMocker();
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 		$mock->sum(5, 6);
 	}
 
@@ -230,14 +238,26 @@ class MockerTest extends \PHPUnit_Framework_TestCase
 	public function setPublicProperty()
 	{
 		$mocker = $this->createMocker();
-		$mock = $mocker->createMock();
+		$mock = $this->createMock($mocker);
 		$mock->publicProperty = 10;
 		$this->assertEquals(10, $mock->publicProperty);
 	}
 
+	/**
+	 * @return Mocker
+	 */
 	private function createMocker()
 	{
 		return new Mocker('MockBuilderTestClass', $this);
+	}
+
+	/**
+	 * @param Mocker $mocker
+	 * @return \MockBuilderTestClass
+	 */
+	private function createMock(Mocker $mocker)
+	{
+		return $mocker->createMock();
 	}
 }
 

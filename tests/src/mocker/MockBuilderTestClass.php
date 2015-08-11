@@ -1,4 +1,5 @@
 <?php
+
 class MockBuilderTestClass
 {
 	public $publicProperty;
@@ -24,6 +25,11 @@ class MockBuilderTestClass
 	}
 
 	public static function staticMethod($a = null, $b = null)
+	{
+		return $a + $b;
+	}
+
+	final public function finalMethod($a = null, $b = null)
 	{
 		return $a + $b;
 	}

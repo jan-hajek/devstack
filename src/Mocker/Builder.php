@@ -1,5 +1,13 @@
 <?php
 namespace Jelito\DevStack\Mocker;
+use Jelito\DevStack\Mocker\Exception;
+use Jelito\DevStack\Mocker\Exception\FinalMethodException;
+use Jelito\DevStack\Mocker\Exception\NonExistentMethodException;
+use Jelito\DevStack\Mocker\Exception\PrivateMethodException;
+use Jelito\DevStack\Mocker\Exception\ProtectedMethodException;
+use Jelito\DevStack\Mocker\Exception\StaticMethodException;
+use Jelito\DevStack\Mocker\Exception\UndeclaredMethodInvocationException;
+use Jelito\DevStack\Mocker\Exception\UnknownVerifyMethodException;
 
 /**
  * @internal
@@ -94,16 +102,17 @@ class Builder
 
 	/**
 	 * @param string $name
+	 * @throws FinalMethodException
+	 * @throws NonExistentMethodException
 	 * @throws PrivateMethodException
-	 * @throws NonExistentMethodCallException
-	 * @throws StaticMethodException
 	 * @throws ProtectedMethodException
+	 * @throws StaticMethodException
 	 */
 	private function checkOriginClassMethod($name)
 	{
 		$originMethods = $this->originClassMethods;
 		if (!array_key_exists($name, $originMethods)) {
-			throw new NonExistentMethodCallException($this->className . "::" . $name . ' does not exists.');
+			throw new NonExistentMethodException($this->className . "::" . $name . ' does not exists.');
 		}
 		$method = $originMethods[$name];
 		if ($method->isStatic()) {
@@ -114,6 +123,9 @@ class Builder
 		}
 		if ($method->isProtected()) {
 			throw new ProtectedMethodException($this->className . "::" . $name . ' is protected, MockBuilder is useless. :(');
+		}
+		if ($method->isFinal()) {
+			throw new FinalMethodException($this->className . "::" . $name . ' is final, MockBuilder is useless. :(');
 		}
 	}
 
@@ -128,8 +140,7 @@ class Builder
 
 		$this->mock = $this->testCase->getMock($this->className, $allMethodsNames, array(), '', false, false, false);
 		foreach ($methods as $methodName => $method) {
-			$returnParam = isset($this->returns[$methodName]) ? $this->returns[$methodName] : null;
-			$this->buildMethod($methodName, $returnParam);
+			$this->buildMethod($methodName);
 		}
 		$this->createUndeclaredMethods();
 		return $this->mock;
@@ -137,9 +148,8 @@ class Builder
 
 	/**
 	 * @param string $methodName
-	 * @param mixed $returnParam
 	 */
-	private function buildMethod($methodName, $returnParam)
+	private function buildMethod($methodName)
 	{
 		$self = $this;
 
@@ -168,6 +178,9 @@ class Builder
 				case 'callback':
 					$inputParams[] = count($self->getInvocations($methodName));
 					return call_user_func_array($returnValue, $inputParams);
+					break;
+				default:
+					throw new Exception("unknown method return type {$returnType}");
 					break;
 			}
 		};
